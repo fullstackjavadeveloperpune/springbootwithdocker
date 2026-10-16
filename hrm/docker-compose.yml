@@ -1,0 +1,38 @@
+services:
+
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    environment:
+      POSTGRES_DB: hrm
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hrm"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - hrm-network
+
+  customermgnt:
+    build: .
+    container_name: hrm
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - hrm-network
+
+volumes:
+  postgres_data:
+
+networks:
+  hrm-network:
+    driver: bridge
